@@ -25,6 +25,14 @@ class XbpsAdapter(Adapter):
             parts = line.strip().split()
             if len(parts) >= 2:
                 pkg_ver = parts[1]
-                name = pkg_ver.rsplit("-", 1)[0] if "-" in pkg_ver else pkg_ver
+                # xbps format: name-version_revision, find where version starts (digit after -)
+                for i, segment in enumerate(pkg_ver.split("-")):
+                    if segment and segment[0].isdigit():
+                        # Found version, everything before this is the name
+                        name = "-".join(pkg_ver.split("-")[:i])
+                        break
+                else:
+                    # No version found, use the whole thing
+                    name = pkg_ver
                 names.append(name)
         return names

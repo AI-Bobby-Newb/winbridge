@@ -206,7 +206,9 @@ def test_xbps_upgrade(xbps):
 
 def test_xbps_search(xbps):
     mock_result = MagicMock()
-    mock_result.stdout = "[*] nginx-1.24.0_1 A high performance HTTP server\n"
+    mock_result.stdout = "[*] nginx-1.24.0_1 A high performance HTTP server\n[*] python3-pip-23.0_1 Python package installer\n"
     with patch("winbridge.adapters.xbps.subprocess.run", return_value=mock_result):
         results = xbps.search("nginx")
-        assert any("nginx" in r for r in results)
+        assert "nginx" in results
+        assert "python3-pip" in results
+        assert "python3-pip-23.0" not in results  # wrong strip would produce this

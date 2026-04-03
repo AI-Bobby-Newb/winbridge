@@ -22,6 +22,7 @@ class DnfAdapter(Adapter):
         )
         names = []
         for line in result.stdout.splitlines():
-            if "." in line and ":" in line:
+            # dnf search output: "pkg-name.arch : description"
+            if " : " in line and "." in line and not line.startswith(" "):
                 names.append(line.split(".")[0].strip())
         return names
