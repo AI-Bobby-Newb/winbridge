@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import hashlib
-import shutil
 import sys
 import tarfile
 import zipfile
@@ -150,17 +149,20 @@ class WinbridgeApp:
         n = archive.name
         if n.endswith((".tar.xz", ".tar.gz", ".tar.bz2", ".tar.zst")):
             with tarfile.open(archive) as tf:
-                tf.extractall(dest)
+                tf.extractall(dest, filter="data")
         elif n.endswith(".zip"):
             with zipfile.ZipFile(archive) as zf:
                 zf.extractall(dest)
         # Raw binary: leave as-is
 
     def _find_binary(self, directory: Path, name: str) -> Path:
-        for f in directory.rglob("*"):
-            if f.is_file() and f.name == name and (f.stat().st_mode & 0o111):
-                return f
-        executables = [f for f in directory.rglob("*") if f.is_file() and (f.stat().st_mode & 0o111)]
+        executables = [
+            f for f in directory.rglob("*")
+            if f.is_file() and (f.stat().st_mode & 0o111)
+        ]
+        named = [f for f in executables if f.name == name]
+        if named:
+            return named[0]
         if executables:
             return max(executables, key=lambda f: f.stat().st_size)
         raise FileNotFoundError(f"No executable binary found in {directory}")

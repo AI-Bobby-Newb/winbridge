@@ -88,3 +88,31 @@ def test_info_installed(app):
 def test_info_not_installed(app):
     app._db.get.return_value = None
     assert app.info("nginx") is None
+
+
+def test_run_github_package(app):
+    app._db.get.return_value = {
+        "name": "helix", "source": "github",
+        "container_id": "winbridge-helix:latest", "version": "25.01",
+    }
+    fake_manifest = {
+        "package": {"name": "helix", "binary": "hx", "version": "25.01"},
+        "container": {"ports": [], "mounts": [], "env": [], "network": False},
+    }
+    app._github.parse_manifest.return_value = fake_manifest
+    app.run("helix", ["myfile.txt"])
+    app._runtime.run.assert_called_once_with(
+        "helix", "winbridge-helix:latest", fake_manifest, ["myfile.txt"]
+    )
+
+
+def test_run_native_package_exits(app):
+    app._db.get.return_value = {"name": "nginx", "source": "native", "container_id": None}
+    with pytest.raises(SystemExit):
+        app.run("nginx", [])
+
+
+def test_run_not_installed_exits(app):
+    app._db.get.return_value = None
+    with pytest.raises(SystemExit):
+        app.run("helix", [])
