@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import shutil
 import subprocess
 import tempfile
@@ -33,6 +34,13 @@ class ContainerRuntime:
         image_name = f"winbridge-{name}:latest"
         binary_name = manifest["package"].get("binary") or binary_path.name
 
+        # Validate binary_name is a safe plain filename
+        if not re.match(r'^[a-zA-Z0-9._-]+$', binary_name):
+            raise ValueError(
+                f"Invalid binary name in manifest: {binary_name!r}. "
+                "Must contain only letters, digits, dots, hyphens, underscores."
+            )
+
         with tempfile.TemporaryDirectory() as build_dir:
             ctx = Path(build_dir)
             shutil.copy2(binary_path, ctx / binary_name)
@@ -54,7 +62,7 @@ class ContainerRuntime:
 
         cmd = [self._runtime_bin, "run", "--rm", "-it"]
 
-        if not c.get("network", True):
+        if not c.get("network", False):
             cmd.append("--network=none")
 
         for mount in c.get("mounts", []):

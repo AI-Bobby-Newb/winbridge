@@ -112,10 +112,12 @@ def test_pacman_upgrade(pacman):
 
 def test_pacman_search(pacman):
     mock_result = MagicMock()
-    mock_result.stdout = "community/nginx 1.24.0-1\nextra/curl 8.0-1\n"
+    mock_result.stdout = "community/nginx 1.24.0-1\n    A high performance web server and reverse/proxy\nextra/curl 8.0-1\n    A URL tool\n"
     with patch("winbridge.adapters.pacman.subprocess.run", return_value=mock_result):
         results = pacman.search("nginx")
         assert "nginx" in results
+        assert "curl" in results
+        assert "proxy" not in results  # description line must not be included
 
 
 @pytest.fixture
@@ -197,12 +199,12 @@ def test_xbps_remove(xbps):
 def test_xbps_update(xbps):
     with patch("winbridge.adapters.xbps.subprocess.run") as m:
         xbps.update("nginx")
-        m.assert_called_once_with(["xbps-install", "-u", "nginx"], check=True)
+        m.assert_called_once_with(["xbps-install", "-yu", "nginx"], check=True)
 
 def test_xbps_upgrade(xbps):
     with patch("winbridge.adapters.xbps.subprocess.run") as m:
         xbps.upgrade()
-        m.assert_called_once_with(["xbps-install", "-Su"], check=True)
+        m.assert_called_once_with(["xbps-install", "-Syu"], check=True)
 
 def test_xbps_search(xbps):
     mock_result = MagicMock()

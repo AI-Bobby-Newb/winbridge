@@ -23,5 +23,5 @@ class PacmanAdapter(Adapter):
         return [
             line.split("/")[1].split(" ")[0]
             for line in result.stdout.splitlines()
-            if "/" in line and " " in line
+            if not line.startswith((" ", "\t")) and "/" in line and " " in line
         ]

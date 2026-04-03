@@ -55,7 +55,11 @@ class WinbridgeApp:
         console.print(f"[bold]Downloading[/bold] {asset['name']}...")
         binary_path = self._download_and_extract(asset, pkg.name, version)
 
-        manifest_path = binary_path.parent / "winbridge.toml"
+        dest_dir = (
+            Path.home() / ".local" / "share" / "winbridge" / "packages"
+            / pkg.name / version
+        )
+        manifest_path = dest_dir / "winbridge.toml"
         manifest = self._github.parse_manifest(manifest_path)
         if manifest["package"]["binary"] is None:
             manifest["package"]["binary"] = pkg.name
@@ -152,6 +156,11 @@ class WinbridgeApp:
                 tf.extractall(dest, filter="data")
         elif n.endswith(".zip"):
             with zipfile.ZipFile(archive) as zf:
+                dest_resolved = dest.resolve()
+                for member in zf.namelist():
+                    member_path = (dest / member).resolve()
+                    if not str(member_path).startswith(str(dest_resolved)):
+                        raise ValueError(f"Unsafe zip entry detected: {member!r}")
                 zf.extractall(dest)
         # Raw binary: leave as-is
 

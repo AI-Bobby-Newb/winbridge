@@ -11,10 +11,10 @@ class XbpsAdapter(Adapter):
         subprocess.run(["xbps-remove", "-y", package], check=True)
 
     def update(self, package: str) -> None:
-        subprocess.run(["xbps-install", "-u", package], check=True)
+        subprocess.run(["xbps-install", "-yu", package], check=True)
 
     def upgrade(self) -> None:
-        subprocess.run(["xbps-install", "-Su"], check=True)
+        subprocess.run(["xbps-install", "-Syu"], check=True)
 
     def search(self, query: str) -> list[str]:
         result = subprocess.run(

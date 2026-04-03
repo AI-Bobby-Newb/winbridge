@@ -12,7 +12,16 @@ console = Console()
 
 def _app():
     from winbridge._factory import build_app
-    return build_app()
+    from winbridge.distro import DistroNotSupportedError
+    from winbridge.container import NoRuntimeError
+    try:
+        return build_app()
+    except DistroNotSupportedError as e:
+        console.print(f"[red]Unsupported system:[/red] {e}")
+        raise typer.Exit(1)
+    except NoRuntimeError as e:
+        console.print(f"[red]No container runtime:[/red] {e}")
+        raise typer.Exit(1)
 
 
 @app.command()
@@ -39,7 +48,8 @@ def update(package: str = typer.Argument(..., help="Package to update")):
         wa._adapter.update(package)
         console.print(f"[green]✓[/green] {package} updated.")
     else:
-        wa.install(package)  # Re-install to latest for GitHub packages
+        # Re-install from GitHub to get latest, using stored repo
+        wa.install(f"gh:{record['repo']}")
 
 
 @app.command()
