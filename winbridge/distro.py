@@ -30,6 +30,7 @@ _ID_LIKE_MAP: dict[str, str] = {
     "fedora": "rhel",
     "suse": "suse",
     "opensuse": "suse",
+    "arch": "arch",
 }
 
 
@@ -41,7 +42,7 @@ def detect_distro() -> str:
     """
     fields: dict[str, str] = {}
     with open("/etc/os-release") as f:
-        for line in f:
+        for line in f.read().splitlines():
             line = line.strip()
             if "=" not in line or line.startswith("#"):
                 continue
