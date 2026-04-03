@@ -32,7 +32,10 @@ def update(package: str = typer.Argument(..., help="Package to update")):
     """Update a single package to its latest version."""
     wa = _app()
     record = wa._db.get(package)
-    if record and record["source"] == "native":
+    if record is None:
+        console.print(f"[red]Error:[/red] {package} is not installed.")
+        raise typer.Exit(1)
+    if record["source"] == "native":
         wa._adapter.update(package)
         console.print(f"[green]✓[/green] {package} updated.")
     else:
