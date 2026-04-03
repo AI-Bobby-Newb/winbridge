@@ -15,19 +15,19 @@ def runtime(tmp_path: Path):
 
 
 def test_detect_podman():
-    with patch("shutil.which", side_effect=lambda x: "/usr/bin/podman" if x == "podman" else None):
+    with patch("winbridge.container.shutil.which", side_effect=lambda x: "/usr/bin/podman" if x == "podman" else None):
         rt = ContainerRuntime.detect()
         assert rt._runtime_bin == "podman"
 
 
 def test_detect_docker_fallback():
-    with patch("shutil.which", side_effect=lambda x: "/usr/bin/docker" if x == "docker" else None):
+    with patch("winbridge.container.shutil.which", side_effect=lambda x: "/usr/bin/docker" if x == "docker" else None):
         rt = ContainerRuntime.detect()
         assert rt._runtime_bin == "docker"
 
 
 def test_detect_none_raises():
-    with patch("shutil.which", return_value=None):
+    with patch("winbridge.container.shutil.which", return_value=None):
         with pytest.raises(NoRuntimeError):
             ContainerRuntime.detect()
 
@@ -50,6 +50,9 @@ def test_run_with_network_disabled(runtime):
     cmd = mock_run.call_args.args[0]
     assert "--network=none" in cmd
     assert "winbridge-helix:latest" in cmd
+    # verify $HOME was expanded in the mount argument
+    home = str(Path.home())
+    assert any(home in arg for arg in cmd)
 
 
 def test_run_passes_args(runtime):
@@ -57,6 +60,17 @@ def test_run_passes_args(runtime):
         runtime.run("helix", "winbridge-helix:latest", MANIFEST, args=["myfile.txt"])
     cmd = mock_run.call_args.args[0]
     assert "myfile.txt" in cmd
+
+
+def test_run_with_network_enabled(runtime):
+    manifest_network_on = {
+        "package": {"name": "nginx", "binary": "nginx", "version": "1.24"},
+        "container": {"ports": [], "mounts": [], "env": [], "network": True},
+    }
+    with patch("subprocess.run") as mock_run:
+        runtime.run("nginx", "winbridge-nginx:latest", manifest_network_on, args=[])
+    cmd = mock_run.call_args.args[0]
+    assert "--network=none" not in cmd
 
 
 def test_remove_image(runtime):
