@@ -1,7 +1,7 @@
 [project]
 name = "winbridge"
 version = "0.1.0"
-description = "Add your description here"
+description = "Cross-distro Linux package manager"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
