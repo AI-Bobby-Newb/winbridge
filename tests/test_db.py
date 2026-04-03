@@ -17,6 +17,7 @@ def test_record_and_get_native_package(db: PackageDB):
     assert pkg["source"] == "native"
     assert pkg["repo"] is None
     assert pkg["container_id"] is None
+    assert pkg["install_date"]  # must be a non-empty ISO timestamp
 
 
 def test_record_and_get_github_package(db: PackageDB):

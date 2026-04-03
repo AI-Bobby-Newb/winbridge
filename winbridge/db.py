@@ -62,7 +62,7 @@ class PackageDB:
         return dict(row) if row else None
 
     def list_all(self, source: str | None = None) -> list[dict]:
-        if source:
+        if source is not None:
             rows = self._conn.execute(
                 "SELECT * FROM packages WHERE source = ? ORDER BY name", (source,)
             ).fetchall()
