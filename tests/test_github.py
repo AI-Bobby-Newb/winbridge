@@ -52,8 +52,7 @@ def test_fetch_release_pinned_tag(backend):
     mock_resp.json.return_value = FAKE_RELEASE
     with patch("httpx.get", return_value=mock_resp) as mock_get:
         backend.fetch_release("helix-editor/helix", tag="25.01")
-    assert "25.01" in mock_get.call_args.args[0]
-    assert "latest" not in mock_get.call_args.args[0]
+    assert "/releases/tags/25.01" in mock_get.call_args.args[0]
 
 
 def test_fetch_release_rate_limit(backend):
