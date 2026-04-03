@@ -15,19 +15,19 @@ def apt():
 
 
 def test_apt_install(apt):
-    with patch("subprocess.run") as mock_run:
+    with patch("winbridge.adapters.apt.subprocess.run") as mock_run:
         apt.install("nginx")
         mock_run.assert_called_once_with(["apt", "install", "-y", "nginx"], check=True)
 
 
 def test_apt_remove(apt):
-    with patch("subprocess.run") as mock_run:
+    with patch("winbridge.adapters.apt.subprocess.run") as mock_run:
         apt.remove("nginx")
         mock_run.assert_called_once_with(["apt", "remove", "-y", "nginx"], check=True)
 
 
 def test_apt_update(apt):
-    with patch("subprocess.run") as mock_run:
+    with patch("winbridge.adapters.apt.subprocess.run") as mock_run:
         apt.update("nginx")
         mock_run.assert_called_once_with(
             ["apt", "install", "--only-upgrade", "-y", "nginx"], check=True
@@ -35,16 +35,15 @@ def test_apt_update(apt):
 
 
 def test_apt_upgrade(apt):
-    with patch("subprocess.run") as mock_run:
+    with patch("winbridge.adapters.apt.subprocess.run") as mock_run:
         apt.upgrade()
         calls = [c.args[0] for c in mock_run.call_args_list]
-        assert ["apt", "update"] in calls
-        assert ["apt", "upgrade", "-y"] in calls
+        assert calls == [["apt", "update"], ["apt", "upgrade", "-y"]]
 
 
 def test_apt_search(apt):
     mock_result = MagicMock()
     mock_result.stdout = "nginx - high performance web server\ncurl - command line tool\n"
-    with patch("subprocess.run", return_value=mock_result):
+    with patch("winbridge.adapters.apt.subprocess.run", return_value=mock_result):
         results = apt.search("nginx")
         assert results == ["nginx", "curl"]
