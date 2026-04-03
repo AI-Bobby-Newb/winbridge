@@ -45,3 +45,11 @@ def test_resolve_no_alias_file():
     with patch("winbridge.resolver.ALIASES_PATH", Path("/nonexistent/aliases.toml")):
         pkg = resolve("nginx")
         assert pkg.backend == "native"
+
+
+def test_resolve_malformed_alias_raises(tmp_path: Path):
+    aliases_toml = tmp_path / "aliases.toml"
+    aliases_toml.write_text('[aliases]\nhelix = "helix-editor/helix"\n')  # missing gh: prefix
+    with patch("winbridge.resolver.ALIASES_PATH", aliases_toml):
+        with pytest.raises(ValueError, match="must start with 'gh:'"):
+            resolve("helix")

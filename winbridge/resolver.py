@@ -19,7 +19,14 @@ def _load_aliases() -> dict[str, str]:
     if not ALIASES_PATH.exists():
         return {}
     with open(ALIASES_PATH, "rb") as f:
-        return tomllib.load(f).get("aliases", {})
+        aliases = tomllib.load(f).get("aliases", {})
+    for name, value in aliases.items():
+        if not value.startswith("gh:"):
+            raise ValueError(
+                f"Invalid alias {name!r}: value {value!r} must start with 'gh:'. "
+                f"Example: {name} = \"gh:user/repo\""
+            )
+    return aliases
 
 
 def _parse_gh(spec: str) -> tuple[str, str | None]:
